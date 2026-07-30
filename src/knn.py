@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.impute import KNNImputer
 import matplotlib.pyplot as plt
-from utils import (
+from src.utils import (
     load_valid_csv,
     load_public_test_csv,
     load_train_sparse,
