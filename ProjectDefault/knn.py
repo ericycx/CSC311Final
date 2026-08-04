@@ -40,14 +40,10 @@ def knn_impute_by_item(matrix, valid_data, k):
     :param k: int
     :return: float
     """
-    #####################################################################
-    # TODO:                                                             #
-    # Implement the function as described in the docstring.             #
-    #####################################################################
-    acc = None
-    #####################################################################
-    #                       END OF YOUR CODE                            #
-    #####################################################################
+    nbrs = KNNImputer(n_neighbors=k)
+    mat = nbrs.fit_transform(matrix.T).T
+    acc = sparse_matrix_evaluate(valid_data, mat)
+    print("Validation Accuracy: {}".format(acc))
     return acc
 
 
@@ -62,12 +58,29 @@ def main():
     print(sparse_matrix.shape)
 
     #####################################################################
-    # TODO:                                                             #
-    # Compute the validation accuracy for each k. Then pick k* with     #
-    # the best performance and report the test accuracy with the        #
-    # chosen k*.                                                        #
-    #####################################################################
-    pass
+    k_values = [1, 6, 11, 16, 21, 26]
+    val_accs = []
+
+    for name, impute_fn in [("user", knn_impute_by_user), ("item", knn_impute_by_item)]:
+        print("\n=== {}-based collaborative filtering ===".format(name))
+        val_accs = []
+        for k in k_values:
+            print("k = {}".format(k))
+            val_accs.append(impute_fn(sparse_matrix, val_data, k))
+
+        plt.figure()
+        plt.plot(k_values, val_accs, marker="o")
+        plt.xlabel("k")
+        plt.ylabel("Validation accuracy")
+        plt.title("{}-based collaborative filtering: validation accuracy vs. k".format(name))
+        plt.xticks(k_values)
+        plt.grid(True)
+        plt.savefig("knn_{}.png".format(name), dpi=150, bbox_inches="tight")
+
+        k_star = k_values[int(np.argmax(val_accs))]
+        test_acc = impute_fn(sparse_matrix, test_data, k_star)
+        print("[{}] k* = {}, test accuracy = {}".format(name, k_star, test_acc))
+
     #####################################################################
     #                       END OF YOUR CODE                            #
     #####################################################################
