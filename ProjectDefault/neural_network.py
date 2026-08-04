@@ -73,7 +73,10 @@ class AutoEncoder(nn.Module):
         # Implement the function as described in the docstring.             #
         # Use sigmoid activations for f and g.                              #
         #####################################################################
-        out = inputs
+
+        x = F.sigmoid(self.g(inputs))
+        x = F.sigmoid(self.h(x))
+        out = x #x.squeeze(1)
         #####################################################################
         #                       END OF YOUR CODE                            #
         #####################################################################
@@ -117,6 +120,7 @@ def train(model, lr, lamb, train_data, zero_train_data, valid_data, num_epoch):
             target[nan_mask] = output[nan_mask]
 
             loss = torch.sum((output - target) ** 2.0)
+            loss += (lamb / 2) * model.get_weight_norm()
             loss.backward()
 
             train_loss += loss.item()
@@ -168,16 +172,39 @@ def main():
     # validation set.                                                   #
     #####################################################################
     # Set model hyperparameters.
-    k = None
-    model = None
+    k_vals = [10, 50, 100, 200, 500]
+    lambs = [0.001, 0.01, 0.1, 1]
+
+    best_model = None
+    best_k = None
+    best_valid_acc = 0
 
     # Set optimization hyperparameters.
-    lr = None
-    num_epoch = None
-    lamb = None
+    lr = 0.01
+    num_epoch = 75
+    #lamb = 0
 
-    train(model, lr, lamb, train_matrix, zero_train_matrix, valid_data, num_epoch)
+    for lamb in lambs:
+        print("Training with Lamb = " + str(lamb))
+
+        model = AutoEncoder(train_matrix.shape[1], 500)
+        train(model, lr, lamb, train_matrix, zero_train_matrix, valid_data, num_epoch)
+
+        valid_acc = evaluate(model, zero_train_matrix, valid_data)
+        print("Validation Accuracy =" + str(valid_acc))
+
+        if valid_acc > best_valid_acc:
+            best_valid_acc = valid_acc
+            best_lamb = lamb
+            best_model = model
+
     # Next, evaluate your network on validation/test data
+
+    print("Best lambda = " + str(best_lamb))
+    print("Best validation accuracy = " + str(best_valid_acc))
+
+    test_acc = evaluate(best_model, zero_train_matrix, test_data)
+    print("Test accuracy = " + str(test_acc))
 
     #####################################################################
     #                       END OF YOUR CODE                            #
