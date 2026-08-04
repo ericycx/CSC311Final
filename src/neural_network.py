@@ -191,7 +191,7 @@ def main():
         train(model, lr, lamb, train_matrix, zero_train_matrix, valid_data, num_epoch)
 
         valid_acc = evaluate(model, zero_train_matrix, valid_data)
-        print(f"Validation Accuracy = {valid_acc:.4f}")
+        print("Validation Accuracy =" + str(valid_acc))
 
         if valid_acc > best_valid_acc:
             best_valid_acc = valid_acc
