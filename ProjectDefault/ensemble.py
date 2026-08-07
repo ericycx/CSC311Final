@@ -71,7 +71,8 @@ def main():
         boot_data = bootstrap_sample(train_data)
         theta, beta, val_acc_lst, _, _ = irt(boot_data, valid_data, lr, iterations)
         models.append((theta, beta))
-        print(f"Model {i + 1} val accuracy: {val_acc_lst[-1]:.4f}")
+        test_acc_i = ensemble_acc(test_data, irt_predict_probs(test_data, theta, beta))
+        print(f"Model {i + 1} val accuracy: {val_acc_lst[-1]:.4f}  test accuracy: {test_acc_i:.4f}")
         
     # print(models)
 
